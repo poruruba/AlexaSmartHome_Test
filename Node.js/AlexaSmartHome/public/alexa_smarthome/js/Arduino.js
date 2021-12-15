@@ -37,10 +37,6 @@ class Arduino{
     this.prefix = prefix;
   }
 
-  setPrefix(prefix){
-    this.prefix = prefix;
-  }
-
   async getIpAddress(){
     return this.webapi_request(this.module_type + "getIpAddress", {});
   }
