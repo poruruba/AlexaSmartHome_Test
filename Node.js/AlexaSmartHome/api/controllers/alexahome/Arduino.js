@@ -11,8 +11,8 @@ const Headers = fetch.Headers;
 
 class Arduino{
   constructor(url, prefix){
-    this.prefix = prefix;
     this.base_url = url;
+    this.prefix = prefix;
     this.module_type = '/';
 
     this.Wire = new Wire(this);
@@ -28,7 +28,7 @@ class Arduino{
   }
 
   setPrefix(prefix){
-    this.perfix = prefix;
+    this.prefix = prefix;
   }
 
   async getIpAddress(){
