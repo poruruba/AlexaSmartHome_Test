@@ -1,0 +1,12 @@
+[
+	{
+		"enable": true,
+		"topic": "esp32_webapi_notify",
+		"handler": "trigger"
+	},
+	{
+		"enable": true,
+		"topic": "esp32_webapi_push",
+		"handler": "trigger"
+	}
+]

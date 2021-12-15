@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src * data: gap: https://ssl.gstatic.com 'unsafe-eval' 'unsafe-inline'; style-src * 'unsafe-inline'; media-src *; img-src * data: content: blob:;">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="msapplication-tap-highlight" content="no">
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
+
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha384-nvAa0+6Qg9clwYCGGPpDQLVpLNn0fRaROjHqs13t4Ggj3Ez50XnGQqc/r8MhnRDZ" crossorigin="anonymous"></script>
+  <!-- Latest compiled and minified CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+  <!-- Optional theme -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap-theme.min.css" integrity="sha384-6pzBo3FDv/PJ8r2KRkGHifhEocL+1X2rVCTTkUfGk7/0pbek5mMa1upzvWbrUbOZ" crossorigin="anonymous">
+  <!-- Latest compiled and minified JavaScript -->
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd" crossorigin="anonymous"></script>
+
+  <link rel="stylesheet" href="css/start.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/spinkit/2.0.1/spinkit.min.css" />
+  <script src="js/methods_bootstrap.js"></script>
+  <script src="js/components_bootstrap.js"></script>
+  <script src="js/components_utils.js"></script>
+  <script src="js/vue_utils.js"></script>
+  <script src="js/gql_utils.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/vconsole/dist/vconsole.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.7/dat.gui.min.js"></script>
+
+  <title>Esp32 WebApi</title>
+</head>
+<body>
+<!--
+    <div id="loader-background">
+      <div class="sk-plane sk-center"></div>
+    </div>
+-->
+    <div id="top" class="container">
+        <h1>Esp32 WebApi</h1>
+        <hr>
+
+        <label>ホスト</label> <input type="text" class="form-control" v-model="host">
+        <label>prefix</label> <input type="text" class="form-control" v-model="prefix">
+        <button class="btn btn-default btn-sm" v-on:click="esp32_host">設定</button>
+
+        <h1>Wire</h1>
+        <div class="form-inline">
+          <select class="form-control" v-model="wire_index">
+            <option value="0">Wire</option>
+            <option value="1">Wire1</option>
+          </select><br>
+        </div>
+        <div class="form-inline">
+          <label>sda</label> <input type="number" class="form-control" v-model.number="wire_sda">
+          <label>scl</label> <input type="number" class="form-control" v-model.number="wire_scl">
+          <button class="btn btn-default btn-sm" v-on:click="wire_begin">begin</button><br>
+          <button class="btn btn-default btn-sm" v-on:click="wire_scanDevice">scanDevice</button><br>
+          {{wire_devices}}<br>
+          <label>address</label> <input type="number" class="form-control" v-model.number="wire_address">
+          <select class="form-control" v-model="wire_mode">
+            <option value="read">read</option>
+            <option value="write">write</option>
+            <option value="write_read">write & read</option>
+          </select>
+          <span v-if="wire_mode!='read'">
+            <label>write</label><input type="text" class="form-control" v-model="wire_write_value">
+          </span>
+          <span v-if="wire_mode!='write'">
+            <label>read_len</label><input type="number" class="form-control" v-model.number="wire_read_len">
+          </span>
+          <button class="btn btn-default btn-sm" v-on:click="wire_execute">execute</button><br>
+          {{wire_read_value}}
+        </div>
+
+        <h1>Gpio</h1>
+        <div class="form-inline">
+          <label>pin</label> <input type="number" class="form-control" v-model.number="gpio_pin"><br>
+          <select class="form-control" v-model="gpio_pinMode">
+            <option v-bind:value="arduino.Gpio.INPUT">INPUT</option>
+            <option v-bind:value="arduino.Gpio.OUTPUT">OUTPUT</option>
+          </select>
+          <button class="btn btn-default btn-sm" v-on:click="btn_pinMode">pinMode</button><br>
+          <select class="form-control" v-model="gpio_value">
+            <option v-bind:value="arduino.Gpio.LOW">LOW</option>
+            <option v-bind:value="arduino.Gpio.HIGH">HIGH</option>
+          </select>
+          <button class="btn btn-default btn-sm" v-on:click="btn_digitalWrite">digitalWrite</button>
+          <button class="btn btn-default btn-sm" v-on:click="btn_digitalRead">digitalRead</button><br>
+          <button class="btn btn-default btn-sm" v-on:click="btn_analogRead">analogRead</button> {{gpio_analog_value}}<br>
+        </div>
+
+        <h1>Ledc</h1>
+        <div class="form-inline">
+          <label>channel</label> <input type="number" class="form-control" v-model.number="ledc_channel">
+          <label>freq</label> <input type="number" class="form-control" v-model.number="ledc_setup_freq">
+          <label>resolution</label> <input type="number" class="form-control" v-model.number="ledc_setup_resolution">
+          <button class="btn btn-default btn-sm" v-on:click="ledc_setup">setup</button><br>
+          <label>pin</label> <input type="number" class="form-control" v-model.number="ledc_pin">
+          <button class="btn btn-default btn-sm" v-on:click="ledc_attachPin">attachPin</button>
+          <button class="btn btn-default btn-sm" v-on:click="ledc_detachPin">detachPin</button><br>
+          <label>duty</label> <input type="number" class="form-control" v-model="ledc_duty">
+          <button class="btn btn-default btn-sm" v-on:click="ledc_write">write</button><br>
+          <label>freq</label> <input type="number" class="form-control" v-model="ledc_freq">
+          <button class="btn btn-default btn-sm" v-on:click="ledc_writeTone">writeTone</button><br>
+          <label>note</label> <select class="form-control" v-model.number="ledc_note">
+            <option value="0">NOTE_C</option>
+            <option value="1">NOTE_Cs</option>
+            <option value="2">NOTE_D</option>
+            <option value="3">NOTE_Eb</option>
+            <option value="4">NOTE_E</option>
+            <option value="5">NOTE_F</option>
+            <option value="6">NOTE_Fs</option>
+            <option value="7">NOTE_G</option>
+            <option value="8">NOTE_Gs</option>
+            <option value="9">NOTE_A</option>
+            <option value="10">NOTE_Bb</option>
+            <option value="11">NOTE_B</option>
+            <option value="12">NOTE_MAX</option>
+          </select>
+          <label>octave</label> <input type="number" class="form-control" v-model="ledc_octave">
+          <button class="btn btn-default btn-sm" v-on:click="ledc_writeNote">writeNote</button><br>
+        </div>
+
+        <h1>Pixels</h1>
+        <div class="form-inline">
+          <label>pin</label> <input type="number" class="form-control" v-model.number="pixels_pin">
+          <button class="btn btn-default btn-sm" v-on:click="pixels_begin">begin</button><br>
+          <button class="btn btn-default btn-sm" v-on:click="pixels_setOnoff(true)">on</button>
+          <button class="btn btn-default btn-sm" v-on:click="pixels_setOnoff(false)">off</button>
+          <button class="btn btn-default btn-sm" v-on:click="pixels_clear">clear</button><br>
+          <label>index</label> <input type="number" class="form-control" v-model.number="pixels_index">
+          <input type="color" v-model="pixels_color">
+          <button class="btn btn-default btn-sm" v-on:click="pixels_setPixelColor">setPixelColor</button><br>
+        </div>
+
+        <h1>Ble</h1>
+        <div class="form-inline">
+          <label>duration</label> <input type="number" class="form-control" v-model.number="ble_duration">
+        </div>
+        <label>serviceUuid</label> <input type="text" class="form-control" v-model="ble_serviceuuid">
+        <button class="btn btn-default btn-sm" v-on:click="ble_scanDevice">scanDevice</button><br>
+        <br>
+        <div v-for="device in ble_devices">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <label>address</label> {{ble_tohex(device.address)}}<br>
+            </div>
+            <div class="panel-body">
+              <label>name</label> {{device.name}}<br>
+              <label>serviceUuid</label>
+              <ul>
+                <li v-for="uuid in device.serviceUuid">{{uuid}}</li>
+              </ul>
+              <label>manufacturerData</label> {{ba2hex(device.manufacturerData)}}<br>
+              <label>rssi</label> {{device.rssi}}<br>
+              <label>serviceDataUuid</label>
+              <ul>
+                <li v-for="uuid in device.serviceDataUuid">{{uuid}}</li>
+              </ul>
+              <label>serviceData</label>
+              <ul>
+                <li v-for="data in device.serviceData">{{ba2hex(data)}}</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- for progress-dialog -->
+        <progress-dialog v-bind:title="progress_title"></progress-dialog>
+    </div>
+
+    <script src="js/module/Gpio.js"></script>
+    <script src="js/module/Wire.js"></script>
+    <script src="js/module/Ledc.js"></script>
+    <script src="js/module/Pixels.js"></script>
+    <script src="js/module/Ble.js"></script>
+    <script src="js/Arduino.js"></script>
+
+    <script src="js/start.js"></script>
+</body>

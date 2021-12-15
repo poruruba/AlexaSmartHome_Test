@@ -1,0 +1,20 @@
+paths:
+  /mqttapi/*:
+    post:
+      parameters:
+        - in: "query"
+          name: "topic"
+          type: string
+          required: true
+        - in: "query"
+          name: "oneway"
+          type: boolean
+        - in: body
+          name: body
+          schema:
+            $ref: "#/definitions/CommonRequest"
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: "#/definitions/CommonResponse"
