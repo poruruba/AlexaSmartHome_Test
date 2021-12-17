@@ -10,10 +10,12 @@ class AlexaSmartHomeUtils{
     handle(){
         return async (handlerInput, context) => {
             var intent = handlerInput.directive.header.namespace + '.' + handlerInput.directive.header.name;
-            console.log('intent: ' + intent);
+//            console.log('intent: ' + intent);
             var handler = this.intentHandles.get(intent);
             if( handler )
                 return handler(handlerInput, context);
+            else
+                console.log('not found intent: ' + intent);
         }
     }
 }
